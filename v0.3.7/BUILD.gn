@@ -1,0 +1,43 @@
+import("//build/templates/build_template.gni")
+
+static_library("llvm_profiler_runtime") {
+  sources = [
+    "c/profile/InstrProfiling.c",
+    "c/profile/InstrProfiling.h",
+    "c/profile/InstrProfilingBuffer.c",
+    "c/profile/InstrProfilingInternal.c",
+    "c/profile/InstrProfilingInternal.h",
+    "c/profile/InstrProfilingMerge.c",
+    "c/profile/InstrProfilingPlatformLinux.c",
+    "c/profile/InstrProfilingPort.h",
+    "c/profile/InstrProfilingValue.c",
+    "c/profile/InstrProfilingVersionVar.c",
+    "c/profile/InstrProfilingWriter.c",
+    "c/profile/profile/InstrProfData.inc",
+    "c/profile/profile/instr_prof_interface.h",
+  ]
+  include_dirs = [ "c/profile" ]
+  cflags = [
+    "-nostdlibinc",
+    "-fno-stack-protector",
+    "-fno-profile-instr-generate",
+    "-fno-coverage-mapping",
+  ]
+  defines = [
+    "COMPILER_RT_HAS_ATOMICS=1",
+    "__blueos__",
+  ]
+}
+
+build_rust("minicov") {
+  epoch = "0.3"
+  crate_type = "rlib"
+  sources = [ "src/lib.rs" ]
+  inputs = []
+  edition = "2018"
+  deps = [ ":llvm_profiler_runtime" ]
+  features = [ "alloc" ]
+  rustflags = [
+    "--cap-lints=allow",  # Suppress all warnings in crates.io crates
+  ]
+}
